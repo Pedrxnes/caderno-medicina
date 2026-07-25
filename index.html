@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Organizador de estudos para faculdade de medicina: matérias, anotações, lembretes e links, responsivo para iPad.">
+<title>Caderno de Estudos — Medicina</title>
+<style>
+  :root{
+    --bg:#FBF5F1;
+    --surface:#FFFDFB;
+    --surface-2:#F7ECE6;
+    --ink:#3A2233;
+    --ink-soft:#6E5566;
+    --line:#E8D9D3;
+    --accent:#B5527A;
+    --accent-strong:#93315A;
+    --accent-soft:#F3DCE6;
+    --secondary:#7C8B6F;
+    --lavender:#9C8BC4;
+    --success:#5E7A5B;
+    --success-soft:#E1E8DC;
+    --warning:#9A6B23;
+    --warning-soft:#F0E4C2;
+    --danger:#A5403A;
+    --danger-soft:#F3DAD7;
+    --focus:#5B7FB0;
+    --shadow: 0 1px 2px rgba(58,34,51,.06), 0 6px 20px -8px rgba(58,34,51,.18);
+    --radius-s:8px;
+    --radius-m:14px;
+    --radius-l:20px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#241521;
+      --surface:#2E1C2A;
+      --surface-2:#382233;
+      --ink:#F5EAF0;
+      --ink-soft:#CBB3C4;
+      --line:#4A2F44;
+      --accent:#E39CB8;
+      --accent-strong:#F0BFD3;
+      --accent-soft:#452B40;
+      --secondary:#A7B89B;
+      --lavender:#C3B3E3;
+      --success:#9CB894;
+      --success-soft:#334034;
+      --warning:#E0B667;
+      --warning-soft:#453722;
+      --danger:#E39089;
+      --danger-soft:#4A2A28;
+      --focus:#9CBDEB;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#241521; --surface:#2E1C2A; --surface-2:#382233; --ink:#F5EAF0; --ink-soft:#CBB3C4;
+    --line:#4A2F44; --accent:#E39CB8; --accent-strong:#F0BFD3; --accent-soft:#452B40;
+    --secondary:#A7B89B; --lavender:#C3B3E3; --success:#9CB894; --success-soft:#334034;
+    --warning:#E0B667; --warning-soft:#453722; --danger:#E39089; --danger-soft:#4A2A28;
+    --focus:#9CBDEB; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --bg:#FBF5F1; --surface:#FFFDFB; --surface-2:#F7ECE6; --ink:#3A2233; --ink-soft:#6E5566;
+    --line:#E8D9D3; --accent:#B5527A; --accent-strong:#93315A; --accent-soft:#F3DCE6;
+    --secondary:#7C8B6F; --lavender:#9C8BC4; --success:#5E7A5B; --success-soft:#E1E8DC;
+    --warning:#9A6B23; --warning-soft:#F0E4C2; --danger:#A5403A; --danger-soft:#F3DAD7;
+    --focus:#5B7FB0; --shadow: 0 1px 2px rgba(58,34,51,.06), 0 6px 20px -8px rgba(58,34,51,.18);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  .tabular{ font-variant-numeric: tabular-nums; }
+  button, input, select, textarea{ font-family:inherit; font-size:1rem; color:inherit; }
+  a{ color:var(--accent-strong); }
+  ::selection{ background:var(--accent-soft); }
+
+  :focus-visible{ outline: 2.5px solid var(--focus); outline-offset:2px; border-radius:4px; }
+
+  .app-shell{ min-height:100vh; display:flex; flex-direction:column; }
+
+  .topbar{
+    display:flex; align-items:center; gap:.75rem; justify-content:space-between;
+    padding:.7rem 1rem; border-bottom:1px solid var(--line); background:var(--surface);
+    position:sticky; top:0; z-index:10;
+  }
+  .brand{ display:flex; align-items:center; gap:.6rem; min-width:0; }
+  .brand-mark{ width:2rem; height:2rem; flex-shrink:0; color:var(--accent-strong); }
+  .brand-text h1{ font-size:1.15rem; margin:0; line-height:1.1; }
+  .brand-text p{ margin:0; font-size:.72rem; color:var(--ink-soft); letter-spacing:.04em; text-transform:uppercase; }
+  .topbar-actions{ display:flex; gap:.4rem; flex-shrink:0; }
+
+  .icon-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+    width:2.5rem; height:2.5rem; border-radius:var(--radius-s); border:1px solid var(--line);
+    background:var(--surface); cursor:pointer; color:var(--ink-soft);
+  }
+  .icon-btn:hover{ background:var(--surface-2); color:var(--ink); }
+  .icon-btn svg{ width:1.15rem; height:1.15rem; }
+
+  .layout{ flex:1; display:flex; min-height:0; }
+
+  .sidebar{
+    width:216px; flex-shrink:0; border-right:1px solid var(--line);
+    padding:1rem .6rem; display:flex; flex-direction:column; gap:.15rem;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:.65rem; padding:.6rem .75rem; border-radius:var(--radius-s);
+    border:none; background:transparent; color:var(--ink-soft); text-align:left; cursor:pointer; width:100%;
+    min-height:44px;
+  }
+  .nav-item svg{ width:1.2rem; height:1.2rem; flex-shrink:0; }
+  .nav-item span{ font-size:.92rem; }
+  .nav-item:hover{ background:var(--surface-2); color:var(--ink); }
+  .nav-item[aria-current="page"]{ background:var(--accent-soft); color:var(--accent-strong); font-weight:600; }
+
+  main{ flex:1; min-width:0; padding:1.4rem clamp(1rem,3vw,2.2rem) 3rem; max-width:1080px; }
+
+  .bottom-nav{
+    display:none; position:fixed; bottom:0; left:0; right:0; z-index:10;
+    background:var(--surface); border-top:1px solid var(--line);
+    padding:.3rem .25rem calc(.3rem + env(safe-area-inset-bottom));
+    justify-content:space-around;
+  }
+  .bottom-nav button{
+    display:flex; flex-direction:column; align-items:center; gap:.15rem;
+    background:none; border:none; color:var(--ink-soft); padding:.35rem .5rem; border-radius:var(--radius-s);
+    min-width:56px; min-height:48px; cursor:pointer;
+  }
+  .bottom-nav button svg{ width:1.3rem; height:1.3rem; }
+  .bottom-nav button span{ font-size:.62rem; letter-spacing:.02em; }
+  .bottom-nav button[aria-current="page"]{ color:var(--accent-strong); }
+
+  @media (max-width: 767px){
+    .sidebar{ display:none; }
+    .bottom-nav{ display:flex; }
+    main{ padding-bottom:5.5rem; }
+  }
+
+  .view-head{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.1rem; }
+  .view-head h2{ font-size:1.55rem; margin:0; }
+  .view-sub{ color:var(--ink-soft); font-size:.9rem; margin:.15rem 0 0; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+    padding:.6rem 1.05rem; border-radius:999px; border:1px solid transparent;
+    font-size:.92rem; font-weight:600; cursor:pointer; min-height:44px;
+  }
+  .btn svg{ width:1.05rem; height:1.05rem; }
+  .btn.primary{ background:var(--accent-strong); color:#FFFDFC; }
+  .btn.primary:hover{ background:var(--accent); }
+  .btn.ghost{ background:transparent; border-color:var(--line); color:var(--ink); }
+  .btn.ghost:hover{ background:var(--surface-2); }
+  .btn.subtle{ background:var(--surface-2); color:var(--ink); }
+
+  .search-box{ position:relative; max-width:420px; }
+  .search-box svg{ position:absolute; left:.8rem; top:50%; transform:translateY(-50%); width:1rem; height:1rem; color:var(--ink-soft); }
+  .search-box input{
+    width:100%; padding:.65rem .9rem .65rem 2.35rem; border-radius:999px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); min-height:44px;
+  }
+
+  select, .field input, .field textarea{
+    width:100%; padding:.6rem .75rem; border-radius:var(--radius-s); border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); min-height:44px;
+  }
+  .field textarea{ min-height:88px; resize:vertical; }
+  .field{ display:flex; flex-direction:column; gap:.3rem; margin-bottom:.85rem; }
+  .field label{ font-size:.82rem; font-weight:600; color:var(--ink-soft); }
+  .field-row{ display:flex; gap:.75rem; }
+  .field-row .field{ flex:1; }
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m);
+    padding:1rem 1.1rem; box-shadow:var(--shadow);
+  }
+
+  .grid{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .65rem; border-radius:999px;
+    font-size:.76rem; font-weight:600; white-space:nowrap;
+  }
+  .chip .dot{ width:.5rem; height:.5rem; border-radius:50%; flex-shrink:0; }
+
+  .pill{ padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:700; letter-spacing:.02em; }
+  .pill.alta{ background:var(--danger-soft); color:var(--danger); }
+  .pill.media{ background:var(--warning-soft); color:var(--warning); }
+  .pill.baixa{ background:var(--success-soft); color:var(--success); }
+
+  .row-actions{ display:flex; gap:.3rem; flex-shrink:0; }
+  .row-actions .icon-btn{ width:2.15rem; height:2.15rem; }
+  .row-actions svg{ width:1rem; height:1rem; }
+
+  .empty{ padding:2.2rem 1rem; text-align:center; color:var(--ink-soft); border:1px dashed var(--line); border-radius:var(--radius-m); }
+  .empty svg{ width:2rem; height:2rem; margin-bottom:.5rem; opacity:.6; }
+
+  .subject-card{ display:flex; flex-direction:column; gap:.6rem; }
+  .subject-card .head{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+  .subject-card .name{ display:flex; align-items:center; gap:.55rem; font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:1.05rem; font-weight:600; }
+  .subject-card .swatch{ width:1rem; height:1rem; border-radius:50%; flex-shrink:0; }
+  .subject-card .stats{ display:flex; gap:.9rem; font-size:.8rem; color:var(--ink-soft); }
+  .subject-card .stats b{ color:var(--ink); font-weight:700; }
+
+  .task-group{ margin-bottom:1.5rem; }
+  .task-group h3{ font-size:.85rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-family:inherit; margin:0 0 .55rem; }
+  .task-row{
+    display:flex; align-items:flex-start; gap:.75rem; padding:.75rem .5rem; border-bottom:1px solid var(--line);
+  }
+  .task-row:last-child{ border-bottom:none; }
+  .task-row.overdue{ background:linear-gradient(to right, var(--danger-soft), transparent 40%); }
+  .task-row input[type="checkbox"]{ width:1.3rem; height:1.3rem; margin-top:.15rem; accent-color: var(--accent-strong); flex-shrink:0; }
+  .task-row .body{ flex:1; min-width:0; }
+  .task-row .title{ font-weight:600; }
+  .task-row.done .title{ text-decoration:line-through; color:var(--ink-soft); }
+  .task-row .meta{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.35rem; align-items:center; }
+  .task-row .due{ font-size:.78rem; color:var(--ink-soft); }
+  .task-row .due.late{ color:var(--danger); font-weight:700; }
+
+  .note-card, .link-card{ display:flex; flex-direction:column; gap:.5rem; }
+  .note-card .title, .link-card .title{ font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:1.05rem; font-weight:600; }
+  .note-card .body{ font-size:.88rem; color:var(--ink-soft); white-space:pre-wrap; max-height:6.5em; overflow:hidden; }
+  .note-card .tags{ display:flex; gap:.35rem; flex-wrap:wrap; }
+  .note-card .tag{ font-size:.7rem; background:var(--surface-2); padding:.15rem .5rem; border-radius:999px; color:var(--ink-soft); }
+  .link-card a.url{ font-size:.82rem; word-break:break-all; }
+  .link-card .desc{ font-size:.85rem; color:var(--ink-soft); }
+  .card-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:.2rem; }
+
+  .dash-grid{ display:grid; gap:1rem; grid-template-columns: 1.3fr 1fr; align-items:start; }
+  @media (max-width: 900px){ .dash-grid{ grid-template-columns:1fr; } }
+  .stat-strip{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.7rem; margin-bottom:1.1rem; }
+  .stat{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:.85rem 1rem; }
+  .stat .num{ font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:1.7rem; font-weight:700; line-height:1; }
+  .stat .label{ font-size:.75rem; color:var(--ink-soft); margin-top:.25rem; }
+
+  .subject-summary-list{ display:flex; flex-direction:column; gap:.5rem; }
+  .subject-summary-row{ display:flex; align-items:center; gap:.6rem; padding:.55rem .7rem; border-radius:var(--radius-s); background:var(--surface); border:1px solid var(--line); }
+  .subject-summary-row .swatch{ width:.8rem; height:.8rem; border-radius:50%; flex-shrink:0; }
+  .subject-summary-row .name{ flex:1; font-weight:600; font-size:.9rem; }
+  .subject-summary-row .counts{ font-size:.76rem; color:var(--ink-soft); }
+
+  dialog.sheet{
+    border:none; border-radius:var(--radius-l); padding:0; width:min(480px, 92vw);
+    background:var(--surface); color:var(--ink); box-shadow:var(--shadow);
+  }
+  dialog.sheet::backdrop{ background:rgba(36,21,33,.45); }
+  dialog.sheet form{ padding:1.3rem 1.4rem 1.5rem; }
+  dialog.sheet h2{ font-size:1.2rem; margin:0 0 1rem; }
+  .dlg-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:.4rem; }
+
+  .swatch-picker{ display:flex; gap:.55rem; flex-wrap:wrap; }
+  .swatch-picker label{ position:relative; }
+  .swatch-picker input{ position:absolute; opacity:0; width:2rem; height:2rem; margin:0; cursor:pointer; }
+  .swatch-picker .dot{ width:2rem; height:2rem; border-radius:50%; display:block; border:2px solid transparent; }
+  .swatch-picker input:checked + .dot{ border-color:var(--ink); }
+  .swatch-picker input:focus-visible + .dot{ outline:2.5px solid var(--focus); outline-offset:2px; }
+
+  .filter-bar{ display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem; }
+  .filter-bar select{ width:auto; min-width:160px; }
+
+  .toast{
+    position:fixed; left:50%; bottom:1.4rem; transform:translate(-50%, 12px); z-index:50;
+    background:var(--ink); color:var(--bg); padding:.65rem 1.1rem; border-radius:999px;
+    font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M12 4c-2.2 2-3 4.2-3 6.2 0 2.6 1.9 4.3 3 5.8 1.1-1.5 3-3.2 3-5.8 0-2-.8-4.2-3-6.2z"/>
+        <path d="M12 10.2V20"/>
+        <path d="M8.5 20h7"/>
+      </svg>
+      <div class="brand-text">
+        <h1>Caderno de Estudos</h1>
+        <p>Medicina</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnExport" aria-label="Exportar backup em arquivo JSON" title="Exportar backup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+      </button>
+      <button class="icon-btn" id="btnImport" aria-label="Importar backup de um arquivo JSON" title="Importar backup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 5h14"/></svg>
+      </button>
+      <input type="file" id="fileImport" accept="application/json,.json" class="sr-only" aria-hidden="true" tabindex="-1">
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Seções">
+      <!-- nav items injected by JS -->
+    </nav>
+    <main id="main" role="main"></main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Seções"></nav>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<dialog class="sheet" id="dlgSubject">
+  <form id="formSubject">
+    <h2 id="dlgSubjectTitle">Nova matéria</h2>
+    <div class="field">
+      <label for="subjName">Nome da matéria</label>
+      <input id="subjName" name="name" required maxlength="60" placeholder="Ex.: Neuroanatomia">
+    </div>
+    <div class="field">
+      <label id="colorPickLabel">Cor</label>
+      <div class="swatch-picker" id="subjColorPicker" role="radiogroup" aria-labelledby="colorPickLabel"></div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="dlgNote">
+  <form id="formNote">
+    <h2 id="dlgNoteTitle">Nova anotação</h2>
+    <div class="field">
+      <label for="noteTitle">Título</label>
+      <input id="noteTitle" name="title" required maxlength="120" placeholder="Ex.: Plexo braquial">
+    </div>
+    <div class="field">
+      <label for="noteSubject">Matéria</label>
+      <select id="noteSubject" name="subjectId" required></select>
+    </div>
+    <div class="field">
+      <label for="noteTags">Tags (separadas por vírgula)</label>
+      <input id="noteTags" name="tags" placeholder="Ex.: prova, resumo">
+    </div>
+    <div class="field">
+      <label for="noteBody">Conteúdo</label>
+      <textarea id="noteBody" name="body" rows="6" placeholder="Escreva sua anotação..."></textarea>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="dlgTask">
+  <form id="formTask">
+    <h2 id="dlgTaskTitle">Novo lembrete</h2>
+    <div class="field">
+      <label for="taskTitle">O que precisa ser feito?</label>
+      <input id="taskTitle" name="title" required maxlength="120" placeholder="Ex.: Revisar ciclo de Krebs">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="taskSubject">Matéria</label>
+        <select id="taskSubject" name="subjectId" required></select>
+      </div>
+      <div class="field">
+        <label for="taskPriority">Prioridade</label>
+        <select id="taskPriority" name="priority">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="taskDue">Prazo</label>
+      <input id="taskDue" name="dueDate" type="date" required>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="dlgLink">
+  <form id="formLink">
+    <h2 id="dlgLinkTitle">Novo link</h2>
+    <div class="field">
+      <label for="linkTitle">Título</label>
+      <input id="linkTitle" name="title" required maxlength="120" placeholder="Ex.: Aula sobre ciclo cardíaco">
+    </div>
+    <div class="field">
+      <label for="linkUrl">Endereço (URL)</label>
+      <input id="linkUrl" name="url" required placeholder="https://...">
+    </div>
+    <div class="field">
+      <label for="linkSubject">Matéria</label>
+      <select id="linkSubject" name="subjectId" required></select>
+    </div>
+    <div class="field">
+      <label for="linkDesc">Descrição (opcional)</label>
+      <textarea id="linkDesc" name="description" rows="3" placeholder="Do que se trata esse link?"></textarea>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "caderno-medicina-v1";
+
+  var PALETTE = [
+    { key:"rose",       accent:"#B5527A", soft:"#F3DCE6", label:"Rosé" },
+    { key:"sage",        accent:"#7C8B6F", soft:"#E1E8DC", label:"Sálvia" },
+    { key:"lavender",    accent:"#9C8BC4", soft:"#EAE3F5", label:"Lavanda" },
+    { key:"terracotta",  accent:"#C1704A", soft:"#F1DCCD", label:"Terracota" },
+    { key:"mustard",     accent:"#B8933A", soft:"#F0E4C2", label:"Mostarda" },
+    { key:"teal",        accent:"#4A7C8C", soft:"#D3E5E9", label:"Petróleo" }
+  ];
+
+  var ICONS = {
+    painel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7.5" rx="1.6"/></svg>',
+    materias: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.2c0-.8.7-1.4 1.5-1.4H12v16H6c-.8 0-1.5-.6-1.5-1.4z"/><path d="M19.5 5.2c0-.8-.7-1.4-1.5-1.4h-6v16h6c.8 0 1.5-.6 1.5-1.4z"/></svg>',
+    anotacoes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l.9-3.8L15.7 5.4l2.9 2.9L8.3 18.6z"/><path d="M13.8 6.9l3 3"/></svg>',
+    lembretes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.8a6 6 0 1 1 12 0c0 4.2 1.4 5.7 1.4 5.7H4.6S6 14 6 9.8z"/><path d="M10.2 18.3a1.9 1.9 0 0 0 3.6 0"/></svg>',
+    links: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.8" cy="8" r="3.6"/><circle cx="16.2" cy="16" r="3.6"/><path d="M10.1 10.4l3.8 5.2"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l.7-3 10.1-10.1 2.3 2.3L7.5 18.8z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14"/><path d="M9.5 7V5.3a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V7"/><path d="M7 7l.8 12.2a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7"/></svg>',
+    empty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-2.4 2.2-3.3 4.6-3.3 6.8 0 2.9 2.1 4.7 3.3 6.3 1.2-1.6 3.3-3.4 3.3-6.3 0-2.2-.9-4.6-3.3-6.8z"/><path d="M12 10v9"/></svg>'
+  };
+
+  var VIEWS = [
+    { id:"painel",     label:"Painel" },
+    { id:"materias",   label:"Matérias" },
+    { id:"anotacoes",  label:"Anotações" },
+    { id:"lembretes",  label:"Lembretes" },
+    { id:"links",      label:"Links" }
+  ];
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[c];
+    });
+  }
+  function toISODate(d){ return d.toISOString().slice(0,10); }
+  function todayISODate(){ var d = new Date(); d.setHours(0,0,0,0); return toISODate(d); }
+  function addDays(base, n){ var d = new Date(base); d.setDate(d.getDate()+n); return d; }
+  function daysBetween(dateStr){
+    var d = new Date(dateStr + "T00:00:00");
+    var t = new Date(); t.setHours(0,0,0,0);
+    return Math.round((d - t) / 86400000);
+  }
+  function formatDate(dateStr){
+    var d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("pt-BR", { day:"2-digit", month:"short" });
+  }
+  function relativeDue(dateStr){
+    var n = daysBetween(dateStr);
+    if(n < -1) return "atrasado há " + (-n) + " dias";
+    if(n === -1) return "atrasado (ontem)";
+    if(n === 0) return "hoje";
+    if(n === 1) return "amanhã";
+    return "em " + n + " dias";
+  }
+  function paletteFor(key){
+    for(var i=0;i<PALETTE.length;i++){ if(PALETTE[i].key === key) return PALETTE[i]; }
+    return PALETTE[0];
+  }
+  function sanitizeUrl(url){
+    url = String(url || "").trim();
+    if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+    return url;
+  }
+
+  function seedState(){
+    var today = new Date(); today.setHours(0,0,0,0);
+    var s1="s1", s2="s2", s3="s3", s4="s4", s5="s5", s6="s6";
+    return {
+      subjects: [
+        { id:s1, name:"Anatomia",     color:"rose" },
+        { id:s2, name:"Fisiologia",   color:"sage" },
+        { id:s3, name:"Bioquímica",   color:"lavender" },
+        { id:s4, name:"Farmacologia", color:"terracotta" },
+        { id:s5, name:"Patologia",    color:"mustard" },
+        { id:s6, name:"Semiologia",   color:"teal" }
+      ],
+      notes: [
+        { id:uid(), subjectId:s1, title:"Plexo braquial", tags:["neuroanatomia","membro superior"],
+          body:"Formado pelas raízes C5-T1.\nTroncos: superior (C5-C6), médio (C7), inferior (C8-T1).\nDivisões -> fascículos (lateral, medial, posterior) -> ramos terminais: musculocutâneo, mediano, ulnar, radial, axilar.\nLesão do tronco superior (Erb-Duchenne) x tronco inferior (Klumpke) — decorar diferença clínica.", updatedAt: toISODate(today) },
+        { id:uid(), subjectId:s2, title:"Ciclo cardíaco", tags:["cardiovascular"],
+          body:"Sístole ventricular: contração isovolumétrica -> ejeção.\nDiástole: relaxamento isovolumétrico -> enchimento rápido -> diástase -> sístole atrial.\nB1 = fechamento das AV (mitral/tricúspide). B2 = fechamento das semilunares (aórtica/pulmonar).", updatedAt: toISODate(addDays(today,-2)) },
+        { id:uid(), subjectId:s3, title:"Ciclo de Krebs", tags:["metabolismo","prova"],
+          body:"Acetil-CoA + oxaloacetato -> citrato.\n8 reações, produz 3 NADH, 1 FADH2, 1 GTP/ATP por volta.\nOcorre na matriz mitocondrial. Ponto de convergência do catabolismo de carboidratos, lipídios e proteínas.", updatedAt: toISODate(addDays(today,-1)) },
+        { id:uid(), subjectId:s4, title:"Farmacocinética — ADME", tags:["resumo"],
+          body:"Absorção, Distribuição, Metabolismo, Excreção.\nBiodisponibilidade oral depende do efeito de primeira passagem hepática.\nMeia-vida determina o intervalo de doses; considerar em insuficiência renal/hepática.", updatedAt: toISODate(addDays(today,-4)) }
+      ],
+      tasks: [
+        { id:uid(), subjectId:s3, title:"Revisar ciclo de Krebs antes da prova", dueDate: toISODate(addDays(today,2)), priority:"alta", done:false },
+        { id:uid(), subjectId:s1, title:"Entregar relatório de dissecação", dueDate: toISODate(addDays(today,5)), priority:"media", done:false },
+        { id:uid(), subjectId:s6, title:"Ler capítulo de semiologia cardiovascular", dueDate: toISODate(addDays(today,1)), priority:"alta", done:false },
+        { id:uid(), subjectId:s4, title:"Estudar antibióticos beta-lactâmicos", dueDate: toISODate(addDays(today,-1)), priority:"alta", done:false },
+        { id:uid(), subjectId:s2, title:"Revisar potencial de ação neuronal", dueDate: toISODate(addDays(today,-3)), priority:"media", done:true }
+      ],
+      links: [
+        { id:uid(), subjectId:s5, title:"PubMed Central — artigos científicos", url:"https://www.ncbi.nlm.nih.gov/pmc/", description:"Exemplo — edite ou apague. Bom para achar artigos de revisão sobre patologias específicas." },
+        { id:uid(), subjectId:s6, title:"OMS — diretrizes clínicas", url:"https://www.who.int", description:"Exemplo — edite ou apague. Diretrizes oficiais de referência." }
+      ]
+    };
+  }
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && parsed.subjects && parsed.notes && parsed.tasks && parsed.links) return parsed;
+      }
+    }catch(e){}
+    var seeded = seedState();
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded)); }catch(e){}
+    return seeded;
+  }
+
+  var state = loadState();
+  function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ toast("Não foi possível salvar (armazenamento indisponível)."); } }
+
+  var currentView = "painel";
+  var filters = { notesSubject:"all", notesSearch:"", tasksSubject:"all", linksSubject:"all", linksSearch:"", globalSearch:"" };
+  var editing = { type:null, id:null };
+
+  var mainEl = document.getElementById("main");
+  var sidebarEl = document.querySelector(".sidebar");
+  var bottomNavEl = document.querySelector(".bottom-nav");
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2600);
+  }
+
+  function buildNav(){
+    var sideHtml = "";
+    var bottomHtml = "";
+    VIEWS.forEach(function(v){
+      var current = v.id === currentView ? ' aria-current="page"' : "";
+      sideHtml += '<button type="button" class="nav-item" data-view="'+v.id+'"'+current+'>' + ICONS[v.id] + '<span>'+v.label+'</span></button>';
+      bottomHtml += '<button type="button" data-view="'+v.id+'"'+current+'>' + ICONS[v.id] + '<span>'+v.label+'</span></button>';
+    });
+    sidebarEl.innerHTML = sideHtml;
+    bottomNavEl.innerHTML = bottomHtml;
+  }
+
+  function subjectOptions(selectedId){
+    return state.subjects.map(function(s){
+      var sel = s.id === selectedId ? " selected" : "";
+      return '<option value="'+s.id+'"'+sel+'>'+esc(s.name)+'</option>';
+    }).join("");
+  }
+
+  function subjectChip(subjectId){
+    var subj = state.subjects.filter(function(s){ return s.id === subjectId; })[0];
+    if(!subj) return "";
+    var pal = paletteFor(subj.color);
+    return '<span class="chip" style="background:'+pal.soft+'; color:'+pal.accent+'"><span class="dot" style="background:'+pal.accent+'"></span>'+esc(subj.name)+'</span>';
+  }
+
+  function emptyState(msg){
+    return '<div class="empty">'+ICONS.empty+'<div>'+esc(msg)+'</div></div>';
+  }
+
+  // ---------- PAINEL ----------
+  function renderPainel(){
+    var pending = state.tasks.filter(function(t){ return !t.done; });
+    var overdue = pending.filter(function(t){ return daysBetween(t.dueDate) < 0; });
+    var upcoming = pending.slice().sort(function(a,b){ return daysBetween(a.dueDate) - daysBetween(b.dueDate); }).slice(0,5);
+    var todayStr = new Date().toLocaleDateString("pt-BR", { weekday:"long", day:"2-digit", month:"long" });
+
+    var q = filters.globalSearch.trim().toLowerCase();
+    var searchResults = [];
+    if(q){
+      state.notes.forEach(function(n){ if((n.title+" "+n.body).toLowerCase().indexOf(q) > -1) searchResults.push({type:"anotacoes", icon:"anotacoes", title:n.title, subjectId:n.subjectId}); });
+      state.tasks.forEach(function(t){ if(t.title.toLowerCase().indexOf(q) > -1) searchResults.push({type:"lembretes", icon:"lembretes", title:t.title, subjectId:t.subjectId}); });
+      state.links.forEach(function(l){ if((l.title+" "+l.description).toLowerCase().indexOf(q) > -1) searchResults.push({type:"links", icon:"links", title:l.title, subjectId:l.subjectId}); });
+      state.subjects.forEach(function(s){ if(s.name.toLowerCase().indexOf(q) > -1) searchResults.push({type:"materias", icon:"materias", title:s.name, subjectId:s.id}); });
+    }
+
+    var html = '<div class="view-head"><div><h2>Painel</h2><p class="view-sub tabular" style="text-transform:capitalize">'+todayStr+'</p></div></div>';
+
+    html += '<div class="search-box" style="margin-bottom:1.2rem">'+ICONS.search+'<input id="search-global" type="search" placeholder="Buscar em anotações, lembretes, links e matérias..." value="'+esc(filters.globalSearch)+'" aria-label="Busca global"></div>';
+
+    if(q){
+      html += '<div class="grid" style="margin-bottom:1.4rem">';
+      if(searchResults.length === 0){
+        html += emptyState('Nada encontrado para "'+filters.globalSearch+'".');
+      }else{
+        searchResults.forEach(function(r){
+          html += '<button type="button" class="card" data-jump="'+r.type+'" style="text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:.4rem;">'+
+            '<div style="display:flex; align-items:center; gap:.5rem; color:var(--ink-soft)">'+ICONS[r.icon]+'<span style="font-size:.75rem; text-transform:uppercase; letter-spacing:.04em">'+r.type+'</span></div>'+
+            '<div style="font-weight:600">'+esc(r.title)+'</div>'+
+            subjectChip(r.subjectId)+
+          '</button>';
+        });
+      }
+      html += '</div>';
+    }
+
+    html += '<div class="stat-strip">'+
+      '<div class="stat"><div class="num tabular">'+pending.length+'</div><div class="label">Lembretes pendentes</div></div>'+
+      '<div class="stat"><div class="num tabular" style="color:var(--danger)">'+overdue.length+'</div><div class="label">Atrasados</div></div>'+
+      '<div class="stat"><div class="num tabular">'+state.notes.length+'</div><div class="label">Anotações</div></div>'+
+      '<div class="stat"><div class="num tabular">'+state.subjects.length+'</div><div class="label">Matérias</div></div>'+
+    '</div>';
+
+    html += '<div class="dash-grid">';
+
+    html += '<div><h3 style="margin:0 0 .6rem">Próximos prazos</h3>';
+    if(upcoming.length === 0){
+      html += emptyState("Nenhum lembrete pendente. Aproveite para descansar.");
+    }else{
+      html += '<div class="card" style="padding:.3rem 1rem">';
+      upcoming.forEach(function(t){
+        var late = daysBetween(t.dueDate) < 0;
+        html += '<div class="task-row'+(late ? " overdue" : "")+'">'+
+          '<input type="checkbox" data-toggle-task="'+t.id+'" aria-label="Marcar como concluído: '+esc(t.title)+'">'+
+          '<div class="body">'+
+            '<div class="title">'+esc(t.title)+'</div>'+
+            '<div class="meta">'+subjectChip(t.subjectId)+'<span class="pill '+t.priority+'">'+({alta:"Alta",media:"Média",baixa:"Baixa"}[t.priority])+'</span>'+
+            '<span class="due'+(late ? " late" : "")+' tabular">'+formatDate(t.dueDate)+' · '+relativeDue(t.dueDate)+'</span></div>'+
+          '</div>'+
+        '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div><h3 style="margin:0 0 .6rem">Matérias</h3><div class="subject-summary-list">';
+    state.subjects.forEach(function(s){
+      var pal = paletteFor(s.color);
+      var nCount = state.notes.filter(function(n){ return n.subjectId === s.id; }).length;
+      var tCount = state.tasks.filter(function(t){ return t.subjectId === s.id && !t.done; }).length;
+      var lCount = state.links.filter(function(l){ return l.subjectId === s.id; }).length;
+      html += '<div class="subject-summary-row"><span class="swatch" style="background:'+pal.accent+'"></span>'+
+        '<span class="name">'+esc(s.name)+'</span>'+
+        '<span class="counts tabular">'+nCount+' notas · '+tCount+' pend. · '+lCount+' links</span></div>';
+    });
+    html += '</div></div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  // ---------- MATÉRIAS ----------
+  function renderMaterias(){
+    var html = '<div class="view-head"><div><h2>Matérias</h2><p class="view-sub">Organize por disciplina — cada uma com sua cor.</p></div>'+
+      '<button type="button" class="btn primary" data-add="subject">'+ICONS.plus+'Nova matéria</button></div>';
+
+    if(state.subjects.length === 0){
+      html += emptyState("Nenhuma matéria ainda. Crie a primeira para começar.");
+      return html;
+    }
+
+    html += '<div class="grid">';
+    state.subjects.forEach(function(s){
+      var pal = paletteFor(s.color);
+      var nCount = state.notes.filter(function(n){ return n.subjectId === s.id; }).length;
+      var tCount = state.tasks.filter(function(t){ return t.subjectId === s.id && !t.done; }).length;
+      var lCount = state.links.filter(function(l){ return l.subjectId === s.id; }).length;
+      html += '<div class="card subject-card">'+
+        '<div class="head"><div class="name"><span class="swatch" style="background:'+pal.accent+'"></span>'+esc(s.name)+'</div>'+
+        '<div class="row-actions">'+
+          '<button type="button" class="icon-btn" data-edit="subject" data-id="'+s.id+'" aria-label="Editar '+esc(s.name)+'">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn" data-delete="subject" data-id="'+s.id+'" aria-label="Excluir '+esc(s.name)+'">'+ICONS.trash+'</button>'+
+        '</div></div>'+
+        '<div class="stats"><span><b class="tabular">'+nCount+'</b> notas</span><span><b class="tabular">'+tCount+'</b> pendentes</span><span><b class="tabular">'+lCount+'</b> links</span></div>'+
+      '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // ---------- ANOTAÇÕES ----------
+  function renderAnotacoes(){
+    var html = '<div class="view-head"><div><h2>Anotações</h2><p class="view-sub">Resumos organizados por matéria.</p></div>'+
+      '<button type="button" class="btn primary" data-add="note">'+ICONS.plus+'Nova anotação</button></div>';
+
+    html += '<div class="filter-bar">'+
+      '<div class="search-box">'+ICONS.search+'<input id="search-notes" type="search" placeholder="Buscar anotações..." value="'+esc(filters.notesSearch)+'"></div>'+
+      '<select data-role="filter-notes-subject" aria-label="Filtrar por matéria"><option value="all">Todas as matérias</option>'+
+        state.subjects.map(function(s){ return '<option value="'+s.id+'"'+(filters.notesSubject===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+
+      '</select></div>';
+
+    var list = state.notes.filter(function(n){
+      var matchSubj = filters.notesSubject === "all" || n.subjectId === filters.notesSubject;
+      var q = filters.notesSearch.trim().toLowerCase();
+      var matchQ = !q || (n.title+" "+n.body+" "+n.tags.join(" ")).toLowerCase().indexOf(q) > -1;
+      return matchSubj && matchQ;
+    }).sort(function(a,b){ return (b.updatedAt||"").localeCompare(a.updatedAt||""); });
+
+    if(list.length === 0){
+      html += emptyState("Nenhuma anotação encontrada. Crie a primeira ou ajuste os filtros.");
+      return html;
+    }
+
+    html += '<div class="grid">';
+    list.forEach(function(n){
+      html += '<div class="card note-card">'+
+        '<div class="title">'+esc(n.title)+'</div>'+
+        subjectChip(n.subjectId)+
+        '<div class="body">'+esc(n.body)+'</div>'+
+        (n.tags && n.tags.length ? '<div class="tags">'+n.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("")+'</div>' : "")+
+        '<div class="card-foot"><span class="view-sub tabular" style="margin:0">'+(n.updatedAt ? formatDate(n.updatedAt) : "")+'</span>'+
+        '<div class="row-actions">'+
+          '<button type="button" class="icon-btn" data-edit="note" data-id="'+n.id+'" aria-label="Editar anotação">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn" data-delete="note" data-id="'+n.id+'" aria-label="Excluir anotação">'+ICONS.trash+'</button>'+
+        '</div></div>'+
+      '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // ---------- LEMBRETES ----------
+  function renderLembretes(){
+    var html = '<div class="view-head"><div><h2>Lembretes</h2><p class="view-sub">Prazos e tarefas por prioridade.</p></div>'+
+      '<button type="button" class="btn primary" data-add="task">'+ICONS.plus+'Novo lembrete</button></div>';
+
+    html += '<div class="filter-bar"><select data-role="filter-tasks-subject" aria-label="Filtrar por matéria"><option value="all">Todas as matérias</option>'+
+        state.subjects.map(function(s){ return '<option value="'+s.id+'"'+(filters.tasksSubject===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+
+      '</select></div>';
+
+    var filtered = state.tasks.filter(function(t){ return filters.tasksSubject === "all" || t.subjectId === filters.tasksSubject; });
+    var overdue = filtered.filter(function(t){ return !t.done && daysBetween(t.dueDate) < 0; }).sort(function(a,b){ return daysBetween(a.dueDate)-daysBetween(b.dueDate); });
+    var today = filtered.filter(function(t){ return !t.done && daysBetween(t.dueDate) === 0; });
+    var upcoming = filtered.filter(function(t){ return !t.done && daysBetween(t.dueDate) > 0; }).sort(function(a,b){ return daysBetween(a.dueDate)-daysBetween(b.dueDate); });
+    var done = filtered.filter(function(t){ return t.done; }).sort(function(a,b){ return (b.dueDate||"").localeCompare(a.dueDate||""); });
+
+    if(filtered.length === 0){
+      html += emptyState("Nenhum lembrete aqui ainda.");
+      return html;
+    }
+
+    function taskRow(t){
+      var late = !t.done && daysBetween(t.dueDate) < 0;
+      return '<div class="task-row'+(late?" overdue":"")+(t.done?" done":"")+'">'+
+        '<input type="checkbox" data-toggle-task="'+t.id+'" '+(t.done?"checked":"")+' aria-label="Marcar '+esc(t.title)+' como '+(t.done?"pendente":"concluído")+'">'+
+        '<div class="body"><div class="title">'+esc(t.title)+'</div>'+
+        '<div class="meta">'+subjectChip(t.subjectId)+'<span class="pill '+t.priority+'">'+({alta:"Alta",media:"Média",baixa:"Baixa"}[t.priority])+'</span>'+
+        '<span class="due'+(late?" late":"")+' tabular">'+formatDate(t.dueDate)+' · '+relativeDue(t.dueDate)+'</span></div></div>'+
+        '<div class="row-actions">'+
+          '<button type="button" class="icon-btn" data-edit="task" data-id="'+t.id+'" aria-label="Editar lembrete">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn" data-delete="task" data-id="'+t.id+'" aria-label="Excluir lembrete">'+ICONS.trash+'</button>'+
+        '</div>'+
+      '</div>';
+    }
+
+    function group(title, items){
+      if(items.length === 0) return "";
+      return '<div class="task-group"><h3>'+title+' ('+items.length+')</h3><div class="card" style="padding:.2rem 1rem">'+items.map(taskRow).join("")+'</div></div>';
+    }
+
+    html += group("Atrasados", overdue) + group("Hoje", today) + group("Próximos", upcoming) + group("Concluídos", done);
+    return html;
+  }
+
+  // ---------- LINKS ----------
+  function renderLinks(){
+    var html = '<div class="view-head"><div><h2>Links</h2><p class="view-sub">Aulas, artigos e materiais salvos por matéria.</p></div>'+
+      '<button type="button" class="btn primary" data-add="link">'+ICONS.plus+'Novo link</button></div>';
+
+    html += '<div class="filter-bar">'+
+      '<div class="search-box">'+ICONS.search+'<input id="search-links" type="search" placeholder="Buscar links..." value="'+esc(filters.linksSearch)+'"></div>'+
+      '<select data-role="filter-links-subject" aria-label="Filtrar por matéria"><option value="all">Todas as matérias</option>'+
+        state.subjects.map(function(s){ return '<option value="'+s.id+'"'+(filters.linksSubject===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+
+      '</select></div>';
+
+    var list = state.links.filter(function(l){
+      var matchSubj = filters.linksSubject === "all" || l.subjectId === filters.linksSubject;
+      var q = filters.linksSearch.trim().toLowerCase();
+      var matchQ = !q || (l.title+" "+l.description).toLowerCase().indexOf(q) > -1;
+      return matchSubj && matchQ;
+    });
+
+    if(list.length === 0){
+      html += emptyState("Nenhum link encontrado. Salve o primeiro material de estudo.");
+      return html;
+    }
+
+    html += '<div class="grid">';
+    list.forEach(function(l){
+      html += '<div class="card link-card">'+
+        '<div class="title">'+esc(l.title)+'</div>'+
+        subjectChip(l.subjectId)+
+        '<a class="url" href="'+esc(sanitizeUrl(l.url))+'" target="_blank" rel="noopener noreferrer">'+esc(l.url)+'</a>'+
+        (l.description ? '<div class="desc">'+esc(l.description)+'</div>' : "")+
+        '<div class="card-foot" style="justify-content:flex-end">'+
+        '<div class="row-actions">'+
+          '<button type="button" class="icon-btn" data-edit="link" data-id="'+l.id+'" aria-label="Editar link">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn" data-delete="link" data-id="'+l.id+'" aria-label="Excluir link">'+ICONS.trash+'</button>'+
+        '</div></div>'+
+      '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function buildView(){
+    if(state.subjects.length === 0 && currentView !== "materias"){
+      return renderMaterias();
+    }
+    switch(currentView){
+      case "painel": return renderPainel();
+      case "materias": return renderMaterias();
+      case "anotacoes": return renderAnotacoes();
+      case "lembretes": return renderLembretes();
+      case "links": return renderLinks();
+      default: return renderPainel();
+    }
+  }
+
+  function render(){
+    var active = document.activeElement;
+    var restore = null;
+    if(active && mainEl.contains(active) && active.id){
+      restore = { id: active.id, start: active.selectionStart, end: active.selectionEnd };
+    }
+    mainEl.innerHTML = buildView();
+    buildNav();
+    if(restore){
+      var el = document.getElementById(restore.id);
+      if(el){
+        el.focus();
+        if(typeof el.setSelectionRange === "function" && restore.start != null){
+          try{ el.setSelectionRange(restore.start, restore.end); }catch(e){}
+        }
+      }
+    }
+  }
+
+  function goToView(id){ currentView = id; render(); }
+
+  // ---------- dialogs ----------
+  var dlgSubject = document.getElementById("dlgSubject");
+  var dlgNote = document.getElementById("dlgNote");
+  var dlgTask = document.getElementById("dlgTask");
+  var dlgLink = document.getElementById("dlgLink");
+
+  function buildColorPicker(selectedKey){
+    var picker = document.getElementById("subjColorPicker");
+    picker.innerHTML = PALETTE.map(function(p, i){
+      var checked = (selectedKey ? p.key === selectedKey : i === 0) ? " checked" : "";
+      return '<label><input type="radio" name="color" value="'+p.key+'"'+checked+'><span class="dot" style="background:'+p.accent+'"></span><span class="sr-only">'+p.label+'</span></label>';
+    }).join("");
+  }
+
+  function openDialogFor(type, id){
+    editing.type = type; editing.id = id || null;
+    if(type === "subject"){
+      var subj = id ? state.subjects.filter(function(s){ return s.id===id; })[0] : null;
+      document.getElementById("dlgSubjectTitle").textContent = subj ? "Editar matéria" : "Nova matéria";
+      document.getElementById("subjName").value = subj ? subj.name : "";
+      buildColorPicker(subj ? subj.color : null);
+      dlgSubject.showModal();
+      document.getElementById("subjName").focus();
+    } else if(type === "note"){
+      var note = id ? state.notes.filter(function(n){ return n.id===id; })[0] : null;
+      document.getElementById("dlgNoteTitle").textContent = note ? "Editar anotação" : "Nova anotação";
+      document.getElementById("noteSubject").innerHTML = subjectOptions(note ? note.subjectId : (state.subjects[0] && state.subjects[0].id));
+      document.getElementById("noteTitle").value = note ? note.title : "";
+      document.getElementById("noteTags").value = note ? note.tags.join(", ") : "";
+      document.getElementById("noteBody").value = note ? note.body : "";
+      dlgNote.showModal();
+      document.getElementById("noteTitle").focus();
+    } else if(type === "task"){
+      var task = id ? state.tasks.filter(function(t){ return t.id===id; })[0] : null;
+      document.getElementById("dlgTaskTitle").textContent = task ? "Editar lembrete" : "Novo lembrete";
+      document.getElementById("taskSubject").innerHTML = subjectOptions(task ? task.subjectId : (state.subjects[0] && state.subjects[0].id));
+      document.getElementById("taskTitle").value = task ? task.title : "";
+      document.getElementById("taskPriority").value = task ? task.priority : "media";
+      document.getElementById("taskDue").value = task ? task.dueDate : todayISODate();
+      dlgTask.showModal();
+      document.getElementById("taskTitle").focus();
+    } else if(type === "link"){
+      var link = id ? state.links.filter(function(l){ return l.id===id; })[0] : null;
+      document.getElementById("dlgLinkTitle").textContent = link ? "Editar link" : "Novo link";
+      document.getElementById("linkSubject").innerHTML = subjectOptions(link ? link.subjectId : (state.subjects[0] && state.subjects[0].id));
+      document.getElementById("linkTitle").value = link ? link.title : "";
+      document.getElementById("linkUrl").value = link ? link.url : "";
+      document.getElementById("linkDesc").value = link ? link.description : "";
+      dlgLink.showModal();
+      document.getElementById("linkTitle").focus();
+    }
+  }
+
+  document.getElementById("formSubject").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("subjName").value.trim();
+    if(!name) return;
+    var colorInput = document.querySelector('input[name="color"]:checked');
+    var color = colorInput ? colorInput.value : PALETTE[0].key;
+    if(editing.id){
+      var s = state.subjects.filter(function(x){ return x.id===editing.id; })[0];
+      s.name = name; s.color = color;
+    } else {
+      state.subjects.push({ id: uid(), name: name, color: color });
+    }
+    saveState(); dlgSubject.close(); render(); toast("Matéria salva.");
+  });
+
+  document.getElementById("formNote").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = document.getElementById("noteTitle").value.trim();
+    if(!title) return;
+    var subjectId = document.getElementById("noteSubject").value;
+    var tags = document.getElementById("noteTags").value.split(",").map(function(t){ return t.trim(); }).filter(Boolean);
+    var body = document.getElementById("noteBody").value;
+    if(editing.id){
+      var n = state.notes.filter(function(x){ return x.id===editing.id; })[0];
+      n.title=title; n.subjectId=subjectId; n.tags=tags; n.body=body; n.updatedAt=todayISODate();
+    } else {
+      state.notes.push({ id: uid(), subjectId: subjectId, title: title, tags: tags, body: body, updatedAt: todayISODate() });
+    }
+    saveState(); dlgNote.close(); render(); toast("Anotação salva.");
+  });
+
+  document.getElementById("formTask").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = document.getElementById("taskTitle").value.trim();
+    if(!title) return;
+    var subjectId = document.getElementById("taskSubject").value;
+    var priority = document.getElementById("taskPriority").value;
+    var dueDate = document.getElementById("taskDue").value;
+    if(editing.id){
+      var t = state.tasks.filter(function(x){ return x.id===editing.id; })[0];
+      t.title=title; t.subjectId=subjectId; t.priority=priority; t.dueDate=dueDate;
+    } else {
+      state.tasks.push({ id: uid(), subjectId: subjectId, title: title, priority: priority, dueDate: dueDate, done:false });
+    }
+    saveState(); dlgTask.close(); render(); toast("Lembrete salvo.");
+  });
+
+  document.getElementById("formLink").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = document.getElementById("linkTitle").value.trim();
+    var url = document.getElementById("linkUrl").value.trim();
+    if(!title || !url) return;
+    var subjectId = document.getElementById("linkSubject").value;
+    var description = document.getElementById("linkDesc").value;
+    if(editing.id){
+      var l = state.links.filter(function(x){ return x.id===editing.id; })[0];
+      l.title=title; l.url=url; l.subjectId=subjectId; l.description=description;
+    } else {
+      state.links.push({ id: uid(), subjectId: subjectId, title: title, url: url, description: description });
+    }
+    saveState(); dlgLink.close(); render(); toast("Link salvo.");
+  });
+
+  document.querySelectorAll("dialog [data-close]").forEach(function(btn){
+    btn.addEventListener("click", function(){ btn.closest("dialog").close(); });
+  });
+
+  function handleDelete(type, id){
+    var labels = { subject:"matéria (e todas as notas/lembretes/links vinculados)", note:"anotação", task:"lembrete", link:"link" };
+    if(!confirm("Excluir esta " + labels[type] + "? Essa ação não pode ser desfeita.")) return;
+    if(type === "subject"){
+      state.subjects = state.subjects.filter(function(s){ return s.id !== id; });
+      state.notes = state.notes.filter(function(n){ return n.subjectId !== id; });
+      state.tasks = state.tasks.filter(function(t){ return t.subjectId !== id; });
+      state.links = state.links.filter(function(l){ return l.subjectId !== id; });
+    } else if(type === "note"){
+      state.notes = state.notes.filter(function(n){ return n.id !== id; });
+    } else if(type === "task"){
+      state.tasks = state.tasks.filter(function(t){ return t.id !== id; });
+    } else if(type === "link"){
+      state.links = state.links.filter(function(l){ return l.id !== id; });
+    }
+    saveState(); render(); toast("Excluído.");
+  }
+
+  function toggleTask(id){
+    var t = state.tasks.filter(function(x){ return x.id === id; })[0];
+    if(!t) return;
+    t.done = !t.done;
+    saveState(); render();
+  }
+
+  // ---------- event delegation ----------
+  mainEl.addEventListener("click", function(e){
+    var addBtn = e.target.closest("[data-add]");
+    if(addBtn){ openDialogFor(addBtn.getAttribute("data-add"), null); return; }
+    var editBtn = e.target.closest("[data-edit]");
+    if(editBtn){ openDialogFor(editBtn.getAttribute("data-edit"), editBtn.getAttribute("data-id")); return; }
+    var delBtn = e.target.closest("[data-delete]");
+    if(delBtn){ handleDelete(delBtn.getAttribute("data-delete"), delBtn.getAttribute("data-id")); return; }
+    var jumpBtn = e.target.closest("[data-jump]");
+    if(jumpBtn){ goToView(jumpBtn.getAttribute("data-jump")); return; }
+  });
+
+  mainEl.addEventListener("change", function(e){
+    if(e.target.matches('[data-toggle-task]')){ toggleTask(e.target.getAttribute("data-toggle-task")); return; }
+    if(e.target.id === "search-notes-subject") return;
+    if(e.target.matches('[data-role="filter-notes-subject"]')){ filters.notesSubject = e.target.value; render(); return; }
+    if(e.target.matches('[data-role="filter-tasks-subject"]')){ filters.tasksSubject = e.target.value; render(); return; }
+    if(e.target.matches('[data-role="filter-links-subject"]')){ filters.linksSubject = e.target.value; render(); return; }
+  });
+
+  mainEl.addEventListener("input", function(e){
+    if(e.target.id === "search-global"){ filters.globalSearch = e.target.value; render(); return; }
+    if(e.target.id === "search-notes"){ filters.notesSearch = e.target.value; render(); return; }
+    if(e.target.id === "search-links"){ filters.linksSearch = e.target.value; render(); return; }
+  });
+
+  sidebarEl.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-view]");
+    if(btn) goToView(btn.getAttribute("data-view"));
+  });
+  bottomNavEl.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-view]");
+    if(btn) goToView(btn.getAttribute("data-view"));
+  });
+
+  // ---------- backup ----------
+  document.getElementById("btnExport").addEventListener("click", function(){
+    try{
+      var filename = "caderno-medicina-backup-" + todayISODate() + ".json";
+      var data = JSON.stringify(state, null, 2);
+      var blob = new Blob([data], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      toast("Backup baixado!");
+    }catch(err){
+      toast("Não foi possível salvar o backup.");
+    }
+  });
+
+  document.getElementById("btnImport").addEventListener("click", function(){
+    document.getElementById("fileImport").click();
+  });
+  document.getElementById("fileImport").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var parsed = JSON.parse(reader.result);
+        if(!parsed || !parsed.subjects || !parsed.notes || !parsed.tasks || !parsed.links){
+          toast("Arquivo inválido — não parece um backup deste caderno.");
+          return;
+        }
+        if(!confirm("Isso vai substituir todos os dados atuais pelo conteúdo do backup. Continuar?")) return;
+        state = parsed;
+        saveState();
+        currentView = "painel";
+        render();
+        toast("Backup restaurado!");
+      }catch(err){
+        toast("Não foi possível ler esse arquivo.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // ---------- init ----------
+  buildNav();
+  render();
+})();
+</script>
+</body>
+</html>
