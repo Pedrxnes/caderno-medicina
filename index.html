@@ -1049,19 +1049,39 @@
   });
 
   // ---------- backup ----------
+  function downloadViaLink(blob, filename){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast("Backup baixado!");
+  }
+
   document.getElementById("btnExport").addEventListener("click", function(){
     try{
       var filename = "caderno-medicina-backup-" + todayISODate() + ".json";
       var data = JSON.stringify(state, null, 2);
       var blob = new Blob([data], { type: "application/json" });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url; a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-      toast("Backup baixado!");
+      var file = null;
+      try{ file = new File([blob], filename, { type: "application/json" }); }catch(e){}
+
+      // iOS Safari (e navegadores mobile em geral): usar a folha de compartilhar
+      // nativa salva um arquivo .json de verdade em "Arquivos". O link de
+      // download por Blob abaixo costuma só abrir o conteúdo numa aba nova
+      // no Safari do iPad, sem salvar nada de fato.
+      if(file && navigator.canShare && navigator.canShare({ files: [file] })){
+        navigator.share({ files: [file], title: filename }).then(function(){
+          toast("Backup compartilhado! Escolha \"Salvar em Arquivos\".");
+        }).catch(function(err){
+          if(err && err.name === "AbortError") return;
+          downloadViaLink(blob, filename);
+        });
+        return;
+      }
+      downloadViaLink(blob, filename);
     }catch(err){
       toast("Não foi possível salvar o backup.");
     }
