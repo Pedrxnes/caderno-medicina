@@ -234,7 +234,10 @@
 
   .note-card, .link-card{ display:flex; flex-direction:column; gap:.5rem; }
   .note-card .title, .link-card .title{ font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:1.05rem; font-weight:600; }
-  .note-card .body{ font-size:.88rem; color:var(--ink-soft); white-space:pre-wrap; max-height:6.5em; overflow:hidden; }
+  .note-card{ cursor:pointer; }
+  .note-card:hover{ border-color:var(--accent); }
+  .note-card .body{ position:relative; font-size:.88rem; color:var(--ink-soft); white-space:pre-wrap; max-height:6.5em; overflow:hidden; }
+  .note-card .body::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:1.6em; background:linear-gradient(to bottom, transparent, var(--surface)); }
   .note-card .tags{ display:flex; gap:.35rem; flex-wrap:wrap; }
   .note-card .tag{ font-size:.7rem; background:var(--surface-2); padding:.15rem .5rem; border-radius:999px; color:var(--ink-soft); }
   .link-card a.url{ font-size:.82rem; word-break:break-all; }
@@ -259,7 +262,12 @@
     background:var(--surface); color:var(--ink); box-shadow:var(--shadow);
   }
   dialog.sheet::backdrop{ background:rgba(36,21,33,.45); }
-  dialog.sheet form{ padding:1.3rem 1.4rem 1.5rem; }
+  dialog.sheet form, dialog.sheet .plain{ padding:1.3rem 1.4rem 1.5rem; }
+  dialog.sheet.wide{ width:min(560px, 92vw); }
+  .view-note-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:.7rem; }
+  .view-note-head h2{ margin:0; }
+  .view-note-body{ white-space:pre-wrap; line-height:1.65; max-height:55vh; overflow-y:auto; padding-right:.3rem; }
+  .close-x{ font-size:1.4rem; line-height:1; font-family:inherit; }
   dialog.sheet h2{ font-size:1.2rem; margin:0 0 1rem; }
   .dlg-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:.4rem; }
 
@@ -367,6 +375,22 @@
       <button type="submit" class="btn primary">Salvar</button>
     </div>
   </form>
+</dialog>
+
+<dialog class="sheet wide" id="dlgViewNote" aria-labelledby="viewNoteTitle">
+  <div class="plain">
+    <div class="view-note-head">
+      <h2 id="viewNoteTitle"></h2>
+      <button type="button" class="icon-btn close-x" data-close aria-label="Fechar">&times;</button>
+    </div>
+    <div id="viewNoteSubject" style="margin-bottom:.5rem"></div>
+    <div id="viewNoteTags" class="tags" style="margin-bottom:.8rem"></div>
+    <div id="viewNoteBody" class="view-note-body"></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Fechar</button>
+      <button type="button" class="btn primary" id="viewNoteEditBtn">Editar</button>
+    </div>
+  </div>
 </dialog>
 
 <dialog class="sheet" id="dlgTask">
@@ -733,7 +757,7 @@
 
     html += '<div class="grid">';
     list.forEach(function(n){
-      html += '<div class="card note-card">'+
+      html += '<div class="card note-card" data-view-note="'+n.id+'" tabindex="0" role="button" aria-label="Ver anotação completa: '+esc(n.title)+'">'+
         '<div class="title">'+esc(n.title)+'</div>'+
         subjectChip(n.subjectId)+
         '<div class="body">'+esc(n.body)+'</div>'+
@@ -873,6 +897,19 @@
   var dlgNote = document.getElementById("dlgNote");
   var dlgTask = document.getElementById("dlgTask");
   var dlgLink = document.getElementById("dlgLink");
+  var dlgViewNote = document.getElementById("dlgViewNote");
+
+  function openNoteView(id){
+    var n = state.notes.filter(function(x){ return x.id === id; })[0];
+    if(!n) return;
+    document.getElementById("viewNoteTitle").textContent = n.title;
+    document.getElementById("viewNoteSubject").innerHTML = subjectChip(n.subjectId);
+    var tagsEl = document.getElementById("viewNoteTags");
+    tagsEl.innerHTML = (n.tags && n.tags.length) ? n.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("") : "";
+    document.getElementById("viewNoteBody").textContent = n.body || "";
+    document.getElementById("viewNoteEditBtn").onclick = function(){ dlgViewNote.close(); openDialogFor("note", n.id); };
+    dlgViewNote.showModal();
+  }
 
   function buildColorPicker(selectedKey){
     var picker = document.getElementById("subjColorPicker");
@@ -1021,8 +1058,19 @@
     if(editBtn){ openDialogFor(editBtn.getAttribute("data-edit"), editBtn.getAttribute("data-id")); return; }
     var delBtn = e.target.closest("[data-delete]");
     if(delBtn){ handleDelete(delBtn.getAttribute("data-delete"), delBtn.getAttribute("data-id")); return; }
+    var viewNoteEl = e.target.closest("[data-view-note]");
+    if(viewNoteEl){ openNoteView(viewNoteEl.getAttribute("data-view-note")); return; }
     var jumpBtn = e.target.closest("[data-jump]");
     if(jumpBtn){ goToView(jumpBtn.getAttribute("data-jump")); return; }
+  });
+
+  mainEl.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " ") return;
+    var card = e.target.closest("[data-view-note]");
+    if(card && e.target === card){
+      e.preventDefault();
+      openNoteView(card.getAttribute("data-view-note"));
+    }
   });
 
   mainEl.addEventListener("change", function(e){
