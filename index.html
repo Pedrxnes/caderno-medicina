@@ -271,6 +271,16 @@
   dialog.sheet h2{ font-size:1.2rem; margin:0 0 1rem; }
   .dlg-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:.4rem; }
 
+  .image-thumbs{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem; }
+  .image-thumbs .thumb{ position:relative; width:4.5rem; height:4.5rem; border-radius:var(--radius-s); overflow:hidden; border:1px solid var(--line); cursor:pointer; flex-shrink:0; }
+  .image-thumbs .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .image-thumbs .thumb .remove-thumb{
+    position:absolute; top:.1rem; right:.1rem; width:1.3rem; height:1.3rem; border-radius:50%;
+    background:rgba(36,21,33,.65); color:#fff; border:none; font-size:.85rem; line-height:1;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
+  }
+  .note-card .image-thumbs .thumb{ width:3.6rem; height:3.6rem; }
+
   .swatch-picker{ display:flex; gap:.55rem; flex-wrap:wrap; }
   .swatch-picker label{ position:relative; }
   .swatch-picker input{ position:absolute; opacity:0; width:2rem; height:2rem; margin:0; cursor:pointer; }
@@ -370,6 +380,11 @@
       <label for="noteBody">Conteúdo</label>
       <textarea id="noteBody" name="body" rows="6" placeholder="Escreva sua anotação..."></textarea>
     </div>
+    <div class="field">
+      <label for="noteImages">Imagens</label>
+      <input id="noteImages" name="images" type="file" accept="image/*" multiple>
+      <div id="noteImagesPreview" class="image-thumbs"></div>
+    </div>
     <div class="dlg-actions">
       <button type="button" class="btn ghost" data-close>Cancelar</button>
       <button type="submit" class="btn primary">Salvar</button>
@@ -386,10 +401,18 @@
     <div id="viewNoteSubject" style="margin-bottom:.5rem"></div>
     <div id="viewNoteTags" class="tags" style="margin-bottom:.8rem"></div>
     <div id="viewNoteBody" class="view-note-body"></div>
+    <div id="viewNoteImages" class="image-thumbs" style="margin-top:.8rem"></div>
     <div class="dlg-actions">
       <button type="button" class="btn ghost" data-close>Fechar</button>
       <button type="button" class="btn primary" id="viewNoteEditBtn">Editar</button>
     </div>
+  </div>
+</dialog>
+
+<dialog class="sheet wide" id="dlgImageZoom" aria-label="Imagem ampliada">
+  <div class="plain" style="padding:0; position:relative;">
+    <button type="button" class="icon-btn close-x" data-close aria-label="Fechar" style="position:absolute; top:.5rem; right:.5rem; background:var(--surface);">&times;</button>
+    <img id="imageZoomImg" src="" alt="" style="display:block; width:100%; max-height:80vh; object-fit:contain; border-radius:var(--radius-l);">
   </div>
 </dialog>
 
@@ -523,6 +546,32 @@
     return url;
   }
 
+  var IMAGE_MAX_DIM = 1200;
+  var IMAGE_QUALITY = 0.72;
+  function compressImageFile(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){ reject(new Error("read failed")); };
+      reader.onload = function(){
+        var img = new Image();
+        img.onerror = function(){ reject(new Error("decode failed")); };
+        img.onload = function(){
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var scale = Math.min(1, IMAGE_MAX_DIM / Math.max(w, h));
+          var cw = Math.max(1, Math.round(w * scale));
+          var ch = Math.max(1, Math.round(h * scale));
+          var canvas = document.createElement("canvas");
+          canvas.width = cw; canvas.height = ch;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, cw, ch);
+          resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   function seedState(){
     var today = new Date(); today.setHours(0,0,0,0);
     var s1="s1", s2="s2", s3="s3", s4="s4", s5="s5", s6="s6";
@@ -573,11 +622,15 @@
   }
 
   var state = loadState();
-  function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ toast("Não foi possível salvar (armazenamento indisponível)."); } }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
+    catch(e){ toast("Não foi possível salvar — armazenamento cheio ou indisponível."); return false; }
+  }
 
   var currentView = "painel";
   var filters = { notesSubject:"all", notesSearch:"", tasksSubject:"all", linksSubject:"all", linksSearch:"", globalSearch:"" };
   var editing = { type:null, id:null };
+  var editingNoteImages = [];
 
   var mainEl = document.getElementById("main");
   var sidebarEl = document.querySelector(".sidebar");
@@ -762,6 +815,7 @@
         subjectChip(n.subjectId)+
         '<div class="body">'+esc(n.body)+'</div>'+
         (n.tags && n.tags.length ? '<div class="tags">'+n.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("")+'</div>' : "")+
+        (n.images && n.images.length ? '<div class="image-thumbs">'+n.images.slice(0,4).map(function(src){ return '<div class="thumb" data-zoom-img="'+esc(src)+'"><img src="'+esc(src)+'" alt=""></div>'; }).join("")+'</div>' : "")+
         '<div class="card-foot"><span class="view-sub tabular" style="margin:0">'+(n.updatedAt ? formatDate(n.updatedAt) : "")+'</span>'+
         '<div class="row-actions">'+
           '<button type="button" class="icon-btn" data-edit="note" data-id="'+n.id+'" aria-label="Editar anotação">'+ICONS.edit+'</button>'+
@@ -898,6 +952,12 @@
   var dlgTask = document.getElementById("dlgTask");
   var dlgLink = document.getElementById("dlgLink");
   var dlgViewNote = document.getElementById("dlgViewNote");
+  var dlgImageZoom = document.getElementById("dlgImageZoom");
+
+  function openImageZoom(src){
+    document.getElementById("imageZoomImg").src = src;
+    dlgImageZoom.showModal();
+  }
 
   function openNoteView(id){
     var n = state.notes.filter(function(x){ return x.id === id; })[0];
@@ -907,6 +967,8 @@
     var tagsEl = document.getElementById("viewNoteTags");
     tagsEl.innerHTML = (n.tags && n.tags.length) ? n.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("") : "";
     document.getElementById("viewNoteBody").textContent = n.body || "";
+    var imagesEl = document.getElementById("viewNoteImages");
+    imagesEl.innerHTML = (n.images && n.images.length) ? n.images.map(function(src){ return '<div class="thumb" data-zoom-img="'+esc(src)+'"><img src="'+esc(src)+'" alt=""></div>'; }).join("") : "";
     document.getElementById("viewNoteEditBtn").onclick = function(){ dlgViewNote.close(); openDialogFor("note", n.id); };
     dlgViewNote.showModal();
   }
@@ -935,6 +997,8 @@
       document.getElementById("noteTitle").value = note ? note.title : "";
       document.getElementById("noteTags").value = note ? note.tags.join(", ") : "";
       document.getElementById("noteBody").value = note ? note.body : "";
+      editingNoteImages = (note && note.images) ? note.images.slice() : [];
+      renderNoteImagesPreview();
       dlgNote.showModal();
       document.getElementById("noteTitle").focus();
     } else if(type === "task"){
@@ -980,13 +1044,16 @@
     var subjectId = document.getElementById("noteSubject").value;
     var tags = document.getElementById("noteTags").value.split(",").map(function(t){ return t.trim(); }).filter(Boolean);
     var body = document.getElementById("noteBody").value;
+    var images = editingNoteImages.slice();
     if(editing.id){
       var n = state.notes.filter(function(x){ return x.id===editing.id; })[0];
-      n.title=title; n.subjectId=subjectId; n.tags=tags; n.body=body; n.updatedAt=todayISODate();
+      n.title=title; n.subjectId=subjectId; n.tags=tags; n.body=body; n.images=images; n.updatedAt=todayISODate();
     } else {
-      state.notes.push({ id: uid(), subjectId: subjectId, title: title, tags: tags, body: body, updatedAt: todayISODate() });
+      state.notes.push({ id: uid(), subjectId: subjectId, title: title, tags: tags, body: body, images: images, updatedAt: todayISODate() });
     }
-    saveState(); dlgNote.close(); render(); toast("Anotação salva.");
+    var ok = saveState();
+    dlgNote.close(); render();
+    if(ok) toast("Anotação salva.");
   });
 
   document.getElementById("formTask").addEventListener("submit", function(e){
@@ -1025,6 +1092,38 @@
     btn.addEventListener("click", function(){ btn.closest("dialog").close(); });
   });
 
+  document.addEventListener("click", function(e){
+    var zoomEl = e.target.closest("[data-zoom-img]");
+    if(zoomEl){ openImageZoom(zoomEl.getAttribute("data-zoom-img")); }
+  });
+
+  function renderNoteImagesPreview(){
+    var el = document.getElementById("noteImagesPreview");
+    el.innerHTML = editingNoteImages.map(function(src, i){
+      return '<div class="thumb"><img src="'+esc(src)+'" alt=""><button type="button" class="remove-thumb" data-remove-image="'+i+'" aria-label="Remover imagem">&times;</button></div>';
+    }).join("");
+  }
+
+  document.getElementById("noteImagesPreview").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-remove-image]");
+    if(!btn) return;
+    var idx = parseInt(btn.getAttribute("data-remove-image"), 10);
+    editingNoteImages.splice(idx, 1);
+    renderNoteImagesPreview();
+  });
+
+  document.getElementById("noteImages").addEventListener("change", function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+    if(!files.length) return;
+    Promise.all(files.map(compressImageFile)).then(function(dataUrls){
+      editingNoteImages = editingNoteImages.concat(dataUrls);
+      renderNoteImagesPreview();
+    }).catch(function(){
+      toast("Não foi possível processar uma das imagens.");
+    });
+    e.target.value = "";
+  });
+
   function handleDelete(type, id){
     var labels = { subject:"matéria (e todas as notas/lembretes/links vinculados)", note:"anotação", task:"lembrete", link:"link" };
     if(!confirm("Excluir esta " + labels[type] + "? Essa ação não pode ser desfeita.")) return;
@@ -1058,6 +1157,7 @@
     if(editBtn){ openDialogFor(editBtn.getAttribute("data-edit"), editBtn.getAttribute("data-id")); return; }
     var delBtn = e.target.closest("[data-delete]");
     if(delBtn){ handleDelete(delBtn.getAttribute("data-delete"), delBtn.getAttribute("data-id")); return; }
+    if(e.target.closest("[data-zoom-img]")){ return; }
     var viewNoteEl = e.target.closest("[data-view-note]");
     if(viewNoteEl){ openNoteView(viewNoteEl.getAttribute("data-view-note")); return; }
     var jumpBtn = e.target.closest("[data-jump]");
