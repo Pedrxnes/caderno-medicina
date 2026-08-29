@@ -151,6 +151,10 @@
     .bottom-nav{ display:flex; }
     main{ padding-bottom:5.5rem; }
   }
+  @media (max-width: 420px){
+    .bottom-nav button{ min-width:46px; padding:.35rem .2rem; }
+    .bottom-nav button span{ font-size:.58rem; }
+  }
 
   .view-head{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.1rem; }
   .view-head h2{ font-size:1.55rem; margin:0; }
@@ -298,6 +302,71 @@
   }
   .toast.show{ opacity:1; transform:translate(-50%, 0); }
 
+
+  .goal-progress{ display:flex; align-items:center; gap:.8rem; margin-bottom:1.3rem; }
+  .goal-progress .bar{ flex:1; height:.55rem; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+  .goal-progress .bar span{ display:block; height:100%; background:var(--accent-strong); border-radius:999px; }
+  .goal-progress .label{ font-size:.8rem; color:var(--ink-soft); white-space:nowrap; }
+  .done-chip{ font-size:.72rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; background:var(--success-soft); color:var(--success); white-space:nowrap; }
+
+  .paste-zone{
+    border:1px dashed var(--line); border-radius:var(--radius-s); padding:.7rem .8rem;
+    font-size:.78rem; color:var(--ink-soft); text-align:center; margin-bottom:.5rem;
+  }
+  .paste-zone.hot{ border-color:var(--accent); color:var(--accent-strong); background:var(--accent-soft); }
+
+  /* ---------- celebração ao concluir ---------- */
+  .celebrate{ position:fixed; inset:0; z-index:80; pointer-events:none; overflow:hidden; }
+  .celebrate .balloon{
+    position:absolute; bottom:-24vh; width:2.6rem; height:3.3rem; border-radius:50% 50% 46% 46%;
+    background:var(--b); box-shadow: inset -.4rem -.55rem 0 rgba(0,0,0,.09);
+    animation: balloon-up 4.2s cubic-bezier(.32,.02,.5,1) forwards;
+  }
+  .celebrate .balloon::before{
+    content:""; position:absolute; left:50%; top:100%; width:0; height:0; transform:translateX(-50%);
+    border-left:.28rem solid transparent; border-right:.28rem solid transparent; border-top:.38rem solid var(--b);
+  }
+  .celebrate .balloon::after{
+    content:""; position:absolute; left:50%; top:calc(100% + .3rem); width:1px; height:3.2rem;
+    background:linear-gradient(to bottom, var(--ink-soft), transparent); opacity:.5;
+  }
+  @keyframes balloon-up{
+    0%{ transform:translate3d(0,0,0) rotate(-6deg); opacity:0; }
+    10%{ opacity:1; }
+    50%{ transform:translate3d(1.6rem,-58vh,0) rotate(6deg); }
+    85%{ opacity:1; }
+    100%{ transform:translate3d(-1rem,-128vh,0) rotate(-4deg); opacity:0; }
+  }
+  .celebrate .cheer{
+    position:absolute; left:50%; top:20%; opacity:0;
+    font-family:"Iowan Old Style",Palatino,Georgia,serif; font-weight:700; text-align:center;
+    font-size:clamp(1.5rem,6vw,2.6rem); color:var(--accent-strong);
+    animation: cheer-pop 3s ease forwards .15s;
+  }
+  @keyframes cheer-pop{
+    0%{ opacity:0; transform:translate(-50%,.8rem) scale(.6); }
+    15%{ opacity:1; transform:translate(-50%,0) scale(1.08); }
+    25%{ transform:translate(-50%,0) scale(1); }
+    78%{ opacity:1; transform:translate(-50%,0) scale(1); }
+    100%{ opacity:0; transform:translate(-50%,-1.2rem) scale(1); }
+  }
+  .celebrate .finale{
+    position:absolute; left:50%; bottom:14%; transform:translateX(-50%);
+    display:flex; align-items:flex-end; gap:clamp(1rem,5vw,2.4rem);
+  }
+  .celebrate .heart, .celebrate .rose{ opacity:0; }
+  .celebrate .heart{ width:clamp(3rem,10vw,4.4rem); animation: finale-in 3.2s ease forwards 2.4s; }
+  .celebrate .rose{ width:clamp(3.4rem,12vw,5rem); animation: finale-in 3.2s ease forwards 2.65s; }
+  .celebrate .heart svg, .celebrate .rose svg{ width:100%; height:auto; display:block; }
+  .celebrate .heart svg{ transform-origin:50% 60%; animation: heart-beat 1s ease-in-out 2.7s 3; }
+  @keyframes finale-in{
+    0%{ opacity:0; transform:translateY(2.6rem) scale(.7); }
+    20%{ opacity:1; transform:translateY(0) scale(1); }
+    78%{ opacity:1; transform:translateY(0) scale(1); }
+    100%{ opacity:0; transform:translateY(-1.4rem) scale(1.03); }
+  }
+  @keyframes heart-beat{ 0%,100%{ transform:scale(1); } 25%{ transform:scale(1.15); } 45%{ transform:scale(.97); } }
+
   @media (prefers-reduced-motion: reduce){
     *{ transition:none !important; animation:none !important; }
   }
@@ -365,8 +434,8 @@
   <form id="formNote">
     <h2 id="dlgNoteTitle">Nova anotação</h2>
     <div class="field">
-      <label for="noteTitle">Título</label>
-      <input id="noteTitle" name="title" required maxlength="120" placeholder="Ex.: Plexo braquial">
+      <label for="noteTitle">Título <span style="font-weight:400">(opcional)</span></label>
+      <input id="noteTitle" name="title" maxlength="120" placeholder="Ex.: Plexo braquial">
     </div>
     <div class="field">
       <label for="noteSubject">Matéria</label>
@@ -382,6 +451,7 @@
     </div>
     <div class="field">
       <label for="noteImages">Imagens</label>
+      <div class="paste-zone" id="notePasteZone">Cole uma foto aqui com <b>Ctrl+V</b> (ou <b>&#8984;V</b>) &#8212; ou arraste a imagem para c&aacute;.</div>
       <input id="noteImages" name="images" type="file" accept="image/*" multiple>
       <div id="noteImagesPreview" class="image-thumbs"></div>
     </div>
@@ -448,6 +518,24 @@
   </form>
 </dialog>
 
+<dialog class="sheet" id="dlgGoal">
+  <form id="formGoal">
+    <h2 id="dlgGoalTitle">Nova meta</h2>
+    <div class="field">
+      <label for="goalTitle">Qual &eacute; a meta?</label>
+      <input id="goalTitle" name="title" required maxlength="140" placeholder="Ex.: Terminar o resumo de Anatomia">
+    </div>
+    <div class="field">
+      <label for="goalDue">Prazo (data limite)</label>
+      <input id="goalDue" name="dueDate" type="date" required>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog class="sheet" id="dlgLink">
   <form id="formLink">
     <h2 id="dlgLinkTitle">Novo link</h2>
@@ -495,6 +583,7 @@
     anotacoes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l.9-3.8L15.7 5.4l2.9 2.9L8.3 18.6z"/><path d="M13.8 6.9l3 3"/></svg>',
     lembretes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.8a6 6 0 1 1 12 0c0 4.2 1.4 5.7 1.4 5.7H4.6S6 14 6 9.8z"/><path d="M10.2 18.3a1.9 1.9 0 0 0 3.6 0"/></svg>',
     links: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.8" cy="8" r="3.6"/><circle cx="16.2" cy="16" r="3.6"/><path d="M10.1 10.4l3.8 5.2"/></svg>',
+    metas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="13.2" r="7.3"/><circle cx="10.8" cy="13.2" r="3"/><path d="M13.2 10.8L19.5 4.5"/><path d="M16.6 4.9l2.9-.4-.4 2.9"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>',
     plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l.7-3 10.1-10.1 2.3 2.3L7.5 18.8z"/></svg>',
@@ -507,6 +596,7 @@
     { id:"materias",   label:"Matérias" },
     { id:"anotacoes",  label:"Anotações" },
     { id:"lembretes",  label:"Lembretes" },
+    { id:"metas",      label:"Metas" },
     { id:"links",      label:"Links" }
   ];
 
@@ -601,6 +691,10 @@
         { id:uid(), subjectId:s4, title:"Estudar antibióticos beta-lactâmicos", dueDate: toISODate(addDays(today,-1)), priority:"alta", done:false },
         { id:uid(), subjectId:s2, title:"Revisar potencial de ação neuronal", dueDate: toISODate(addDays(today,-3)), priority:"media", done:true }
       ],
+      goals: [
+        { id:uid(), title:"Fazer 30 questões de Fisiologia", dueDate: toISODate(addDays(today,3)), done:false, createdAt: toISODate(today), completedAt:null },
+        { id:uid(), title:"Terminar o resumo do plexo braquial", dueDate: toISODate(addDays(today,7)), done:false, createdAt: toISODate(today), completedAt:null }
+      ],
       links: [
         { id:uid(), subjectId:s5, title:"PubMed Central — artigos científicos", url:"https://www.ncbi.nlm.nih.gov/pmc/", description:"Exemplo — edite ou apague. Bom para achar artigos de revisão sobre patologias específicas." },
         { id:uid(), subjectId:s6, title:"OMS — diretrizes clínicas", url:"https://www.who.int", description:"Exemplo — edite ou apague. Diretrizes oficiais de referência." }
@@ -613,7 +707,10 @@
       var raw = localStorage.getItem(STORAGE_KEY);
       if(raw){
         var parsed = JSON.parse(raw);
-        if(parsed && parsed.subjects && parsed.notes && parsed.tasks && parsed.links) return parsed;
+        if(parsed && parsed.subjects && parsed.notes && parsed.tasks && parsed.links){
+          if(!parsed.goals) parsed.goals = [];
+          return parsed;
+        }
       }
     }catch(e){}
     var seeded = seedState();
@@ -688,12 +785,13 @@
       state.notes.forEach(function(n){ if((n.title+" "+n.body).toLowerCase().indexOf(q) > -1) searchResults.push({type:"anotacoes", icon:"anotacoes", title:n.title, subjectId:n.subjectId}); });
       state.tasks.forEach(function(t){ if(t.title.toLowerCase().indexOf(q) > -1) searchResults.push({type:"lembretes", icon:"lembretes", title:t.title, subjectId:t.subjectId}); });
       state.links.forEach(function(l){ if((l.title+" "+l.description).toLowerCase().indexOf(q) > -1) searchResults.push({type:"links", icon:"links", title:l.title, subjectId:l.subjectId}); });
+      (state.goals||[]).forEach(function(g){ if(g.title.toLowerCase().indexOf(q) > -1) searchResults.push({type:"metas", icon:"metas", title:g.title}); });
       state.subjects.forEach(function(s){ if(s.name.toLowerCase().indexOf(q) > -1) searchResults.push({type:"materias", icon:"materias", title:s.name, subjectId:s.id}); });
     }
 
     var html = '<div class="view-head"><div><h2>Painel</h2><p class="view-sub tabular" style="text-transform:capitalize">'+todayStr+'</p></div></div>';
 
-    html += '<div class="search-box" style="margin-bottom:1.2rem">'+ICONS.search+'<input id="search-global" type="search" placeholder="Buscar em anotações, lembretes, links e matérias..." value="'+esc(filters.globalSearch)+'" aria-label="Busca global"></div>';
+    html += '<div class="search-box" style="margin-bottom:1.2rem">'+ICONS.search+'<input id="search-global" type="search" placeholder="Buscar em anotações, lembretes, metas, links e matérias..." value="'+esc(filters.globalSearch)+'" aria-label="Busca global"></div>';
 
     if(q){
       html += '<div class="grid" style="margin-bottom:1.4rem">';
@@ -714,6 +812,7 @@
     html += '<div class="stat-strip">'+
       '<div class="stat"><div class="num tabular">'+pending.length+'</div><div class="label">Lembretes pendentes</div></div>'+
       '<div class="stat"><div class="num tabular" style="color:var(--danger)">'+overdue.length+'</div><div class="label">Atrasados</div></div>'+
+      '<div class="stat"><div class="num tabular">'+(state.goals||[]).filter(function(g){ return !g.done; }).length+'</div><div class="label">Metas em aberto</div></div>'+
       '<div class="stat"><div class="num tabular">'+state.notes.length+'</div><div class="label">Anotações</div></div>'+
       '<div class="stat"><div class="num tabular">'+state.subjects.length+'</div><div class="label">Matérias</div></div>'+
     '</div>';
@@ -813,7 +912,7 @@
       html += '<div class="card note-card" data-view-note="'+n.id+'" tabindex="0" role="button" aria-label="Ver anotação completa: '+esc(n.title)+'">'+
         '<div class="title">'+esc(n.title)+'</div>'+
         subjectChip(n.subjectId)+
-        '<div class="body">'+esc(n.body)+'</div>'+
+        (n.body ? '<div class="body">'+esc(n.body)+'</div>' : "")+
         (n.tags && n.tags.length ? '<div class="tags">'+n.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join("")+'</div>' : "")+
         (n.images && n.images.length ? '<div class="image-thumbs">'+n.images.slice(0,4).map(function(src){ return '<div class="thumb" data-zoom-img="'+esc(src)+'"><img src="'+esc(src)+'" alt=""></div>'; }).join("")+'</div>' : "")+
         '<div class="card-foot"><span class="view-sub tabular" style="margin:0">'+(n.updatedAt ? formatDate(n.updatedAt) : "")+'</span>'+
@@ -870,6 +969,57 @@
     return html;
   }
 
+  // ---------- METAS ----------
+  function renderMetas(){
+    var goals = state.goals || [];
+    var html = '<div class="view-head"><div><h2>Metas</h2><p class="view-sub">Pequenas conquistas com prazo. Marque quando concluir.</p></div>'+
+      '<button type="button" class="btn primary" data-add="goal">'+ICONS.plus+'Nova meta</button></div>';
+
+    var pendentes = goals.filter(function(g){ return !g.done; });
+    var concluidas = goals.filter(function(g){ return g.done; })
+      .sort(function(a,b){ return (b.completedAt||"").localeCompare(a.completedAt||""); });
+
+    if(goals.length === 0){
+      html += emptyState("Nenhuma meta ainda. Crie a primeira e defina um prazo.");
+      return html;
+    }
+
+    var pct = Math.round(concluidas.length / goals.length * 100);
+    html += '<div class="goal-progress"><div class="bar"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="label tabular">'+concluidas.length+' de '+goals.length+' concluídas ('+pct+'%)</div></div>';
+
+    function goalRow(g){
+      var late = !g.done && daysBetween(g.dueDate) < 0;
+      var meta = g.done
+        ? '<span class="done-chip">Concluída'+(g.completedAt ? ' em '+formatDate(g.completedAt) : '')+'</span>'+
+          '<span class="due tabular">prazo '+formatDate(g.dueDate)+'</span>'
+        : '<span class="due'+(late?" late":"")+' tabular">'+formatDate(g.dueDate)+' · '+relativeDue(g.dueDate)+'</span>';
+      return '<div class="task-row'+(late?" overdue":"")+(g.done?" done":"")+'">'+
+        '<input type="checkbox" data-toggle-goal="'+g.id+'" '+(g.done?"checked":"")+' aria-label="Marcar '+esc(g.title)+' como '+(g.done?"em aberto":"concluída")+'">'+
+        '<div class="body"><div class="title">'+esc(g.title)+'</div>'+
+        '<div class="meta">'+meta+'</div></div>'+
+        '<div class="row-actions">'+
+          '<button type="button" class="icon-btn" data-edit="goal" data-id="'+g.id+'" aria-label="Editar meta">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn" data-delete="goal" data-id="'+g.id+'" aria-label="Excluir meta">'+ICONS.trash+'</button>'+
+        '</div>'+
+      '</div>';
+    }
+
+    function group(title, items){
+      if(items.length === 0) return "";
+      return '<div class="task-group"><h3>'+title+' ('+items.length+')</h3><div class="card" style="padding:.2rem 1rem">'+items.map(goalRow).join("")+'</div></div>';
+    }
+
+    var atrasadas = pendentes.filter(function(g){ return daysBetween(g.dueDate) < 0; }).sort(function(a,b){ return daysBetween(a.dueDate)-daysBetween(b.dueDate); });
+    var hoje = pendentes.filter(function(g){ return daysBetween(g.dueDate) === 0; });
+    var proximas = pendentes.filter(function(g){ return daysBetween(g.dueDate) > 0; }).sort(function(a,b){ return daysBetween(a.dueDate)-daysBetween(b.dueDate); });
+
+    html += group("Atrasadas", atrasadas) + group("Para hoje", hoje) + group("Próximas", proximas);
+    if(pendentes.length === 0) html += '<div class="card" style="margin-bottom:1.5rem">Todas as metas foram concluídas. Que orgulho!</div>';
+    html += group("Histórico — concluídas", concluidas);
+    return html;
+  }
+
   // ---------- LINKS ----------
   function renderLinks(){
     var html = '<div class="view-head"><div><h2>Links</h2><p class="view-sub">Aulas, artigos e materiais salvos por matéria.</p></div>'+
@@ -920,6 +1070,7 @@
       case "materias": return renderMaterias();
       case "anotacoes": return renderAnotacoes();
       case "lembretes": return renderLembretes();
+      case "metas": return renderMetas();
       case "links": return renderLinks();
       default: return renderPainel();
     }
@@ -951,6 +1102,7 @@
   var dlgNote = document.getElementById("dlgNote");
   var dlgTask = document.getElementById("dlgTask");
   var dlgLink = document.getElementById("dlgLink");
+  var dlgGoal = document.getElementById("dlgGoal");
   var dlgViewNote = document.getElementById("dlgViewNote");
   var dlgImageZoom = document.getElementById("dlgImageZoom");
 
@@ -1010,6 +1162,13 @@
       document.getElementById("taskDue").value = task ? task.dueDate : todayISODate();
       dlgTask.showModal();
       document.getElementById("taskTitle").focus();
+    } else if(type === "goal"){
+      var goal = id ? (state.goals||[]).filter(function(g){ return g.id===id; })[0] : null;
+      document.getElementById("dlgGoalTitle").textContent = goal ? "Editar meta" : "Nova meta";
+      document.getElementById("goalTitle").value = goal ? goal.title : "";
+      document.getElementById("goalDue").value = goal ? goal.dueDate : todayISODate();
+      dlgGoal.showModal();
+      document.getElementById("goalTitle").focus();
     } else if(type === "link"){
       var link = id ? state.links.filter(function(l){ return l.id===id; })[0] : null;
       document.getElementById("dlgLinkTitle").textContent = link ? "Editar link" : "Novo link";
@@ -1040,11 +1199,15 @@
   document.getElementById("formNote").addEventListener("submit", function(e){
     e.preventDefault();
     var title = document.getElementById("noteTitle").value.trim();
-    if(!title) return;
     var subjectId = document.getElementById("noteSubject").value;
     var tags = document.getElementById("noteTags").value.split(",").map(function(t){ return t.trim(); }).filter(Boolean);
     var body = document.getElementById("noteBody").value;
     var images = editingNoteImages.slice();
+    if(!title){
+      // nota só de foto (estilo notas autoadesivas): título automático
+      title = images.length ? "Foto de " + formatDate(todayISODate()) : (body.trim().split("\n")[0] || "").slice(0,60);
+      if(!title) return;
+    }
     if(editing.id){
       var n = state.notes.filter(function(x){ return x.id===editing.id; })[0];
       n.title=title; n.subjectId=subjectId; n.tags=tags; n.body=body; n.images=images; n.updatedAt=todayISODate();
@@ -1070,6 +1233,21 @@
       state.tasks.push({ id: uid(), subjectId: subjectId, title: title, priority: priority, dueDate: dueDate, done:false });
     }
     saveState(); dlgTask.close(); render(); toast("Lembrete salvo.");
+  });
+
+  document.getElementById("formGoal").addEventListener("submit", function(e){
+    e.preventDefault();
+    var title = document.getElementById("goalTitle").value.trim();
+    var dueDate = document.getElementById("goalDue").value;
+    if(!title || !dueDate) return;
+    if(!state.goals) state.goals = [];
+    if(editing.id){
+      var g = state.goals.filter(function(x){ return x.id===editing.id; })[0];
+      g.title = title; g.dueDate = dueDate;
+    } else {
+      state.goals.push({ id: uid(), title: title, dueDate: dueDate, done:false, createdAt: todayISODate(), completedAt:null });
+    }
+    saveState(); dlgGoal.close(); render(); toast("Meta salva.");
   });
 
   document.getElementById("formLink").addEventListener("submit", function(e){
@@ -1112,20 +1290,71 @@
     renderNoteImagesPreview();
   });
 
-  document.getElementById("noteImages").addEventListener("change", function(e){
-    var files = Array.prototype.slice.call(e.target.files || []);
-    if(!files.length) return;
+  function addImageFiles(fileList){
+    var files = Array.prototype.slice.call(fileList || []).filter(function(f){
+      return f && /^image\//.test(f.type);
+    });
+    if(!files.length) return false;
     Promise.all(files.map(compressImageFile)).then(function(dataUrls){
       editingNoteImages = editingNoteImages.concat(dataUrls);
       renderNoteImagesPreview();
+      toast(dataUrls.length > 1 ? "Imagens adicionadas." : "Imagem adicionada.");
     }).catch(function(){
       toast("Não foi possível processar uma das imagens.");
     });
+    return true;
+  }
+
+  document.getElementById("noteImages").addEventListener("change", function(e){
+    addImageFiles(e.target.files);
     e.target.value = "";
   });
 
+  var notePasteZone = document.getElementById("notePasteZone");
+
+  // Colar foto direto na anotação (estilo notas autoadesivas do Windows).
+  dlgNote.addEventListener("paste", function(e){
+    var cd = e.clipboardData || window.clipboardData;
+    if(!cd) return;
+    var files = [];
+    var items = cd.items || [];
+    for(var i=0; i<items.length; i++){
+      if(items[i].kind === "file"){
+        var f = items[i].getAsFile();
+        if(f && /^image\//.test(f.type)) files.push(f);
+      }
+    }
+    if(!files.length && cd.files){
+      for(var j=0; j<cd.files.length; j++){
+        if(/^image\//.test(cd.files[j].type)) files.push(cd.files[j]);
+      }
+    }
+    if(!files.length) return;
+    e.preventDefault();
+    addImageFiles(files);
+  });
+
+  notePasteZone.addEventListener("click", function(){
+    document.getElementById("noteImages").click();
+  });
+
+  ["dragenter","dragover"].forEach(function(evName){
+    dlgNote.addEventListener(evName, function(e){
+      e.preventDefault();
+      notePasteZone.classList.add("hot");
+    });
+  });
+  dlgNote.addEventListener("dragleave", function(e){
+    if(!dlgNote.contains(e.relatedTarget)) notePasteZone.classList.remove("hot");
+  });
+  dlgNote.addEventListener("drop", function(e){
+    e.preventDefault();
+    notePasteZone.classList.remove("hot");
+    addImageFiles(e.dataTransfer && e.dataTransfer.files);
+  });
+
   function handleDelete(type, id){
-    var labels = { subject:"matéria (e todas as notas/lembretes/links vinculados)", note:"anotação", task:"lembrete", link:"link" };
+    var labels = { subject:"matéria (e todas as notas/lembretes/links vinculados)", note:"anotação", task:"lembrete", goal:"meta", link:"link" };
     if(!confirm("Excluir esta " + labels[type] + "? Essa ação não pode ser desfeita.")) return;
     if(type === "subject"){
       state.subjects = state.subjects.filter(function(s){ return s.id !== id; });
@@ -1136,6 +1365,8 @@
       state.notes = state.notes.filter(function(n){ return n.id !== id; });
     } else if(type === "task"){
       state.tasks = state.tasks.filter(function(t){ return t.id !== id; });
+    } else if(type === "goal"){
+      state.goals = (state.goals||[]).filter(function(g){ return g.id !== id; });
     } else if(type === "link"){
       state.links = state.links.filter(function(l){ return l.id !== id; });
     }
@@ -1146,7 +1377,72 @@
     var t = state.tasks.filter(function(x){ return x.id === id; })[0];
     if(!t) return;
     t.done = !t.done;
+    if(t.done) t.completedAt = todayISODate(); else t.completedAt = null;
     saveState(); render();
+    if(t.done) celebrate();
+  }
+
+  function toggleGoal(id){
+    var g = (state.goals||[]).filter(function(x){ return x.id === id; })[0];
+    if(!g) return;
+    g.done = !g.done;
+    g.completedAt = g.done ? todayISODate() : null;
+    saveState(); render();
+    if(g.done) celebrate();
+  }
+
+  // ---------- celebração ----------
+  var HEART_SVG = '<svg viewBox="0 0 32 30" aria-hidden="true">'+
+    '<path d="M16 28.6S2.2 20.3 2.2 11.3C2.2 6.6 5.8 3 10.3 3c2.9 0 5 1.6 5.7 3 .7-1.4 2.8-3 5.7-3 4.5 0 8.1 3.6 8.1 8.3 0 9-13.8 17.3-13.8 17.3z" fill="#D42A46"/>'+
+    '<path d="M9 7.1c-1.8.6-3.1 2.2-3.4 4.1-.1.8 1 1 1.2.2.3-1.4 1.3-2.6 2.6-3.1.8-.3.4-1.4-.4-1.2z" fill="#FFFFFF" opacity=".6"/>'+
+  '</svg>';
+
+  var ROSE_SVG = '<svg viewBox="0 0 64 104" aria-hidden="true">'+
+    '<path d="M32 44v56" fill="none" stroke="#4B7A3F" stroke-width="4" stroke-linecap="round"/>'+
+    '<path d="M32 76c-2-9-9-15-19-15 1 10 9 16 19 15z" fill="#5C8C4A"/>'+
+    '<path d="M32 64c2-8 8-14 17-14-1 9-8 15-17 14z" fill="#4E7A3E"/>'+
+    '<path d="M20 40l12 9 12-9-3 10H23z" fill="#4B7A3F"/>'+
+    '<ellipse cx="32" cy="29" rx="21" ry="19" fill="#A81B33"/>'+
+    '<ellipse cx="21" cy="26" rx="10" ry="12" fill="#C62741" transform="rotate(-22 21 26)"/>'+
+    '<ellipse cx="43" cy="26" rx="10" ry="12" fill="#C62741" transform="rotate(22 43 26)"/>'+
+    '<ellipse cx="32" cy="33" rx="12" ry="11" fill="#D93A52"/>'+
+    '<path d="M32 21c6 0 10.5 4.5 10.5 10S38 40 33 40s-8.5-3.5-8.5-7.5 3-6.5 6.5-6.5 5.5 2.5 5.5 5-2 4-3.5 4" fill="none" stroke="#7E0F26" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'+
+  '</svg>';
+
+  var BALLOON_COLORS = ["#E8879F","#F2B8C6","#B5527A","#9C8BC4","#7C8B6F","#E0B667","#4A7C8C","#C1704A"];
+  var celebrateTimer = null;
+
+  function celebrate(){
+    try{
+      if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    }catch(e){}
+
+    var old = document.getElementById("celebrateLayer");
+    if(old && old.parentNode) old.parentNode.removeChild(old);
+    clearTimeout(celebrateTimer);
+
+    var parts = [];
+    for(var i=0; i<16; i++){
+      var color = BALLOON_COLORS[i % BALLOON_COLORS.length];
+      var left = (3 + Math.random()*90).toFixed(1);
+      var w = (1.9 + Math.random()*1.3);
+      var dur = (3.4 + Math.random()*1.6).toFixed(2);
+      var delay = (Math.random()*1.1).toFixed(2);
+      parts.push('<div class="balloon" style="--b:'+color+'; left:'+left+'%; width:'+w.toFixed(2)+'rem; height:'+(w*1.27).toFixed(2)+'rem; animation-duration:'+dur+'s; animation-delay:'+delay+'s"></div>');
+    }
+    parts.push('<div class="cheer">Parabéns!</div>');
+    parts.push('<div class="finale"><div class="heart">'+HEART_SVG+'</div><div class="rose">'+ROSE_SVG+'</div></div>');
+
+    var layer = document.createElement("div");
+    layer.className = "celebrate";
+    layer.id = "celebrateLayer";
+    layer.setAttribute("aria-hidden", "true");
+    layer.innerHTML = parts.join("");
+    document.body.appendChild(layer);
+
+    celebrateTimer = setTimeout(function(){
+      if(layer.parentNode) layer.parentNode.removeChild(layer);
+    }, 6200);
   }
 
   // ---------- event delegation ----------
@@ -1175,6 +1471,7 @@
 
   mainEl.addEventListener("change", function(e){
     if(e.target.matches('[data-toggle-task]')){ toggleTask(e.target.getAttribute("data-toggle-task")); return; }
+    if(e.target.matches('[data-toggle-goal]')){ toggleGoal(e.target.getAttribute("data-toggle-goal")); return; }
     if(e.target.id === "search-notes-subject") return;
     if(e.target.matches('[data-role="filter-notes-subject"]')){ filters.notesSubject = e.target.value; render(); return; }
     if(e.target.matches('[data-role="filter-tasks-subject"]')){ filters.tasksSubject = e.target.value; render(); return; }
@@ -1250,6 +1547,7 @@
           return;
         }
         if(!confirm("Isso vai substituir todos os dados atuais pelo conteúdo do backup. Continuar?")) return;
+        if(!parsed.goals) parsed.goals = [];
         state = parsed;
         saveState();
         currentView = "painel";
